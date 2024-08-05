@@ -30,28 +30,30 @@ desarrolloTecnologia(beto,fundicion).
 desarrolloTecnologia(carola,herreria).
 desarrolloTecnologia(dimitri,herreria).
 desarrolloTecnologia(dimitri,fundicion).
-unidad(campeon,Vida):-between(1,100,Vida).
-unidad(jinete,90).
-unidad(jinete,80).
-unidad("piquero con escudo",55).
-unidad("piquero con escudo",72).
-unidad("piquero con escudo",77).
-unidad("piquero sin escudo",50).
-unidad("piquero sin escudo",65).
-unidad("piquero sin escudo",70).
-tieneUnidad(ana,jinete,90).
-tieneUnidad(ana,"piquero con escudo",55).
-tieneUnidad(ana,"piquero sin escudo",65).
-tieneUnidad(beto,campeon,100).
-tieneUnidad(beto,campeon,80).
-tieneUnidad(beto,"piquero con escudo",55).
-tieneUnidad(beto,jinete,80).
-tieneUnidad(carola,"piquero sin escudo",70).
-tieneUnidad(carola,"piquero con escudo",72).
+unidad(campeon,Vida,_):-between(1,100,Vida).
+unidad("jinete a caballo",90,_).
+unidad("jinete a camello",80,_).
+unidad("piquero con escudo",Vida,1):-Vida is 50*1.1.
+unidad("piquero con escudo",Vida,2):-Vida is 65*1.1.
+unidad("piquero con escudo",Vida,3):-Vida is 70*1.1.
+unidad("piquero sin escudo",50,1).
+unidad("piquero sin escudo",65,2).
+unidad("piquero sin escudo",70,3).
+tieneUnidad(ana,unidad("jinete a caballo",90,_)).
+tieneUnidad(ana,unidad("piquero con escudo",Vida,1)):-Vida is 50*1.1.
+tieneUnidad(ana,unidad("piquero sin escudo",65,2)).
+tieneUnidad(beto,unidad(campeon,100,_)).
+tieneUnidad(beto,unidad(campeon,80,_)).
+tieneUnidad(beto,unidad("piquero con escudo",Vida,1)):-Vida is 50*1.1.
+tieneUnidad(beto,unidad("jinete a camello",80,_)).
+tieneUnidad(carola,unidad("piquero sin escudo",70,3)).
+tieneUnidad(carola,unidad("piquero con escudo",Vida,2)):-Vida is 65*1.1.
 
 % Punto 2
 
 expertoEnMetales(Persona):-desarrolloTecnologia(Persona,herreria),desarrolloTecnologia(Persona,forja).
+expertoEnMetales(Persona):-desarrolloTecnologia(Persona,fundicion).
+expertoEnMetales(Persona):-usaCivilizacion(Persona,romanos).
 
 % Punto 3
 
@@ -63,45 +65,54 @@ tieneAlcanceGlobal(Tecnologia):-tecnologias(Tecnologia),forall(jugador(Persona),
 
 % Punto 5
 
-%civilizacionLider(Civilizacion):-forall(usaCivilizacion(Persona,Civilizacion),desarrolloTecnologia(Persona,Tecnologia)).
-noSonDeLaCivilizacion(Civilizacion,Jugadores):-findall(Persona,not(usaCivilizacion(Persona,Civilizacion)),Jugadores).
+civilizacionLider(Civilizacion):-civilizacion(Civilizacion),findall(Tecnologia,desarrolloTecnologia(_,Tecnologia),Tecnologias),
+findall(Tecnologia,(usaCivilizacion(Jugador,Civilizacion),desarrolloTecnologia(Jugador,Tecnologia)),TecnologiasCivilisacion),
+list_to_set(Tecnologias,Conjunto),list_to_set(TecnologiasCivilisacion,Conjunto2),Conjunto=Conjunto2.
 
 % Punto 7
 
-laUnidadConMasVida(Jugador,X,VidaUnidad):-findall(Vida,tieneUnidad(Jugador,_,Vida),VidaSoldados),maxl(VidaSoldados,VidaUnidad),tieneUnidad(Jugador,X,VidaUnidad).
-
-max(A,B,A) :- A >= B.
-max(A,B,B) :- A < B.
-maxl([X],X). 
-maxl([X|Y],M):- maxl(Y,M1), max(M1,X,M).
+laUnidadConMasVida(Jugador,X,VidaUnidad):-jugador(Jugador),findall(Vida,tieneUnidad(Jugador,unidad(_,Vida,_)),VidaSoldados),
+max_member(VidaUnidad,VidaSoldados),tieneUnidad(Jugador,unidad(X,VidaUnidad,_)).
 
 
 % Punto 8
 
-leGana(Ganador,VidaG,Perdedor,VidaP):-unidad(Ganador,VidaG),unidad(Perdedor,VidaP),Ganador="piquero con escudo",Perdedor=jinete.
-leGana(Ganador,VidaG,Perdedor,VidaP):-unidad(Ganador,VidaG),unidad(Perdedor,VidaP),Ganador="piquero sin escudo",Perdedor=jinete.
-leGana(Ganador,VidaG,Perdedor,VidaP):-unidad(Ganador,VidaG),unidad(Perdedor,VidaP),Ganador=jinete,Perdedor=campeon.
-leGana(Ganador,VidaG,Perdedor,VidaP):-unidad(Ganador,VidaG),unidad(Perdedor,VidaP),Ganador=campeon,Perdedor="piquero con escudo".
-leGana(Ganador,VidaG,Perdedor,VidaP):-unidad(Ganador,VidaG),unidad(Perdedor,VidaP),Ganador=campeon,Perdedor="piquero sin escudo".
-leGana(Ganador,VidaG,Perdedor,VidaP):-unidad(Ganador,VidaG),unidad(Perdedor,VidaP),VidaG>VidaP.
+leGana(unidad("jinete a caballo",_,_),unidad("jinete a camello",_,_)).
+leGana(unidad("jinete a caballo",_,_),unidad(campeon,_,_)).
+leGana(unidad("piquero con escudo",_,_),unidad("jinete a caballo",_,_)).
+leGana(unidad("piquero con escudo",_,_),unidad("jinete a camello",_,_)).
+leGana(unidad("piquero sin escudo",_,_),unidad("jinete a caballo",_,_)).
+leGana(unidad("piquero sin escudo",_,_),unidad("jinete a camello",_,_)).
+leGana(unidad("piquero con escudo",_,3),unidad("piquero con escudo",_,2)).
+leGana(unidad("piquero con escudo",_,2),unidad("piquero con escudo",_,1)).
+leGana(unidad("piquero sin escudo",_,3),unidad("piquero sin escudo",_,2)).
+leGana(unidad("piquero sin escudo",_,2),unidad("piquero sin escudo",_,1)).
+leGana(unidad("piquero con escudo",_,3),unidad("piquero sin escudo",_,_)).
+leGana(unidad("piquero con escudo",_,2),unidad("piquero sin escudo",_,_)).
+leGana(unidad("piquero con escudo",_,1),unidad("piquero sin escudo",_,_)).
+leGana(unidad("piquero sin escudo",_,2),unidad("piquero con escudo",_,1)).
+leGana(unidad("piquero sin escudo",_,3),unidad("piquero con escudo",_,1)).
+leGana(unidad(campeon,_,_),unidad("piquero con escudo",_,_)).
+leGana(unidad(campeon,_,_),unidad("piquero sin escudo",_,_)).
+leGana(unidad(campeon,Vida1,_),unidad(campeon,Vida2,_)):-Vida1>Vida2.
 
 % Punto 9
 
-puedeSobrevivir(Jugador):-jugador(Jugador),findall("piquero con escudo",tieneUnidad(Jugador,"piquero con escudo",_),Piqueros),
-    findall("piquero sin escudo",tieneUnidad(Jugador,"piquero sin escudo",_),Piqueros2),
+puedeSobrevivir(Jugador):-jugador(Jugador),findall("piquero con escudo",tieneUnidad(Jugador,unidad("piquero con escudo",_,_)),Piqueros),
+    findall("piquero sin escudo",tieneUnidad(Jugador,unidad("piquero sin escudo",_,_)),Piqueros2),
     length(Piqueros,Cantidad),length(Piqueros2,Cantidad2),Cantidad>Cantidad2.
 
 % Punto 10
 
-puedeDesarollar(Jugador,Tecnologia):-tecnologias(Tecnologia),Tecnologia=herreria,not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-tecnologias(Tecnologia),Tecnologia=molino,not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-tecnologias(Tecnologia),Tecnologia=forja,desarrolloTecnologia(Jugador,herreria),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-tecnologias(Tecnologia),Tecnologia=fundicion,desarrolloTecnologia(Jugador,forja),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-tecnologias(Tecnologia),Tecnologia=horno,desarrolloTecnologia(Jugador,fundicion),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-tecnologias(Tecnologia),Tecnologia=collera,desarrolloTecnologia(Jugador,molino),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-tecnologias(Tecnologia),Tecnologia=arado,desarrolloTecnologia(Jugador,collera),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-tecnologias(Tecnologia),Tecnologia=emplumado,desarrolloTecnologia(Jugador,herreria),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-tecnologias(Tecnologia),Tecnologia=punta,desarrolloTecnologia(Jugador,emplumado),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-tecnologias(Tecnologia),Tecnologia=laminas,desarrolloTecnologia(Jugador,herreria),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-tecnologias(Tecnologia),Tecnologia=malla,desarrolloTecnologia(Jugador,laminas),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-tecnologias(Tecnologia),Tecnologia=placas,desarrolloTecnologia(Jugador,malla),not(desarrolloTecnologia(Jugador,Tecnologia)).
+puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=herreria,not(desarrolloTecnologia(Jugador,Tecnologia)).
+puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=molino,not(desarrolloTecnologia(Jugador,Tecnologia)).
+puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=forja,desarrolloTecnologia(Jugador,herreria),not(desarrolloTecnologia(Jugador,Tecnologia)).
+puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=fundicion,desarrolloTecnologia(Jugador,forja),not(desarrolloTecnologia(Jugador,Tecnologia)).
+puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=horno,desarrolloTecnologia(Jugador,fundicion),not(desarrolloTecnologia(Jugador,Tecnologia)).
+puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=collera,desarrolloTecnologia(Jugador,molino),not(desarrolloTecnologia(Jugador,Tecnologia)).
+puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=arado,desarrolloTecnologia(Jugador,collera),not(desarrolloTecnologia(Jugador,Tecnologia)).
+puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=emplumado,desarrolloTecnologia(Jugador,herreria),not(desarrolloTecnologia(Jugador,Tecnologia)).
+puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=punta,desarrolloTecnologia(Jugador,emplumado),not(desarrolloTecnologia(Jugador,Tecnologia)).
+puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=laminas,desarrolloTecnologia(Jugador,herreria),not(desarrolloTecnologia(Jugador,Tecnologia)).
+puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=malla,desarrolloTecnologia(Jugador,laminas),not(desarrolloTecnologia(Jugador,Tecnologia)).
+puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=placas,desarrolloTecnologia(Jugador,malla),not(desarrolloTecnologia(Jugador,Tecnologia)).
