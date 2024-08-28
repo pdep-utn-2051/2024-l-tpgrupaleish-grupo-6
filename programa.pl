@@ -4,18 +4,19 @@ jugador(carola).
 jugador(dimitri).
 civilizacion(romanos).
 civilizacion(incas).
-tecnologias(herreria).
-tecnologias(forja).
-tecnologias(fundicion).
-tecnologias(horno).
-tecnologias(molino).
-tecnologias(collera).
-tecnologias(arado).
-tecnologias(emplumado).
-tecnologias(punta).
-tecnologias(laminas).
-tecnologias(malla).
-tecnologias(placas).
+%tecnologias(Nombre,De cual depende)
+tecnologias(herreria,_).
+tecnologias(forja,herreria).
+tecnologias(fundicion,forja).
+tecnologias(horno,fundicion).
+tecnologias(molino,_).
+tecnologias(collera,molino).
+tecnologias(arado,collera).
+tecnologias(emplumado,herreria).
+tecnologias(punta,emplumado).
+tecnologias(laminas,herreria).
+tecnologias(malla,laminas).
+tecnologias(placas,malla).
 usaCivilizacion(ana,romanos).
 usaCivilizacion(beto,incas).
 usaCivilizacion(carola,romanos).
@@ -30,6 +31,7 @@ desarrolloTecnologia(beto,fundicion).
 desarrolloTecnologia(carola,herreria).
 desarrolloTecnologia(dimitri,herreria).
 desarrolloTecnologia(dimitri,fundicion).
+%unidad(Nombre,Vida,Nivel)
 unidad(campeon,Vida,_):-between(1,100,Vida).
 unidad("jinete a caballo",90,_).
 unidad("jinete a camello",80,_).
@@ -57,17 +59,17 @@ expertoEnMetales(Persona):-usaCivilizacion(Persona,romanos).
 
 % Punto 3
 
-civilizacionPopular(Civilizacion):-civilizacion(Civilizacion),findall(Persona,usaCivilizacion(Persona,Civilizacion),Personas),length(Personas,Cantidad),Cantidad>1.
+civilizacionPopular(Civilizacion):-civilizacion(Civilizacion),usaCivilizacion(Persona,Civilizacion),usaCivilizacion(Persona2,Civilizacion),Persona\=Persona2.
 
 % Punto 4
 
-tieneAlcanceGlobal(Tecnologia):-tecnologias(Tecnologia),forall(jugador(Persona),desarrolloTecnologia(Persona,Tecnologia)).
+tieneAlcanceGlobal(Tecnologia):-tecnologias(Tecnologia,_),forall(jugador(Persona),desarrolloTecnologia(Persona,Tecnologia)).
 
 % Punto 5
 
 civilizacionLider(Civilizacion):-civilizacion(Civilizacion),findall(Tecnologia,desarrolloTecnologia(_,Tecnologia),Tecnologias),
 findall(Tecnologia,(usaCivilizacion(Jugador,Civilizacion),desarrolloTecnologia(Jugador,Tecnologia)),TecnologiasCivilisacion),
-list_to_set(Tecnologias,Conjunto),list_to_set(TecnologiasCivilisacion,Conjunto2),Conjunto=Conjunto2.
+list_to_set(Tecnologias,Conjunto),list_to_set(TecnologiasCivilisacion,Conjunto).
 
 % Punto 7
 
@@ -104,15 +106,4 @@ puedeSobrevivir(Jugador):-jugador(Jugador),findall("piquero con escudo",tieneUni
 
 % Punto 10
 
-puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=herreria,not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=molino,not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=forja,desarrolloTecnologia(Jugador,herreria),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=fundicion,desarrolloTecnologia(Jugador,forja),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=horno,desarrolloTecnologia(Jugador,fundicion),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=collera,desarrolloTecnologia(Jugador,molino),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=arado,desarrolloTecnologia(Jugador,collera),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=emplumado,desarrolloTecnologia(Jugador,herreria),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=punta,desarrolloTecnologia(Jugador,emplumado),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=laminas,desarrolloTecnologia(Jugador,herreria),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=malla,desarrolloTecnologia(Jugador,laminas),not(desarrolloTecnologia(Jugador,Tecnologia)).
-puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia),Tecnologia=placas,desarrolloTecnologia(Jugador,malla),not(desarrolloTecnologia(Jugador,Tecnologia)).
+puedeDesarollar(Jugador,Tecnologia):-jugador(Jugador),tecnologias(Tecnologia,Dependencia),desarrolloTecnologia(Jugador,Dependencia),not(desarrolloTecnologia(Jugador,Tecnologia)).
